@@ -1,6 +1,6 @@
-var origBoard;
-const humPlayer = "X"
-const compPlayer = "O"
+var board;
+const human = "X"
+const comp = "O"
 const winCombos = [
     [0,1,2],
     [3,4,5],
@@ -19,7 +19,7 @@ startGame()
 
 function startGame() {
     document.querySelector(".endgame").style.display = "none";
-    origBoard = Array.from(Array(9).keys());
+    board = Array.from(Array(9).keys());
 
     for (var i = 0; i < cells.length; i++) {
         cells[i].innerText = '';
@@ -29,26 +29,42 @@ function startGame() {
 }
 
 
-function turnClick(square) {
-    if (typeof origBoard[square.target.id] == 'number') {
-        turn(square.target.id, humPlayer);
-        if (!checkTie()) turn(bestSpot(), compPlayer);
+function turnClick(event) {
+    
+        if (typeof board[event.target.id] == 'number') {
+            turn(event.target.id, human);
+        
+        if (emptyevents().length != 0) {
+            turn(bestSpot(), comp)
+        }     
     }
 }
 
 
-function turn(squareId, player) {
-    origBoard[squareId] = player;
-    document.getElementById(squareId).innerText = player;
-    let gameWon = checkWin(origBoard, player)
-    if (gameWon) gameOver(gameWon)
+function turn(eventId, player) {
+    board[eventId] = player;
+    document.getElementById(eventId).innerText = player;
+
+    let gameWon = checkWin(board, player)
+    if (gameWon) {
+        gameOver(gameWon)
+    }
+    else {
+        checkTie(gameWon)
+    }
+    
 }
 
 
 function checkWin(board, player) {
-    let plays = board.reduce((a, e, i) =>
-        (e === player) ? a.concat(i) : a, []);
-    let gameWon = null;
+    let plays = []
+    board.forEach((el, i) => {
+        if (el === player ){
+            plays.push(i)
+        }
+    });
+
+    let gameWon =  false
     for (let [index, win] of winCombos.entries()){
         if (win.every(elem => plays.indexOf(elem) > -1 )){
             gameWon = {index: index, player: player};
@@ -62,40 +78,45 @@ function checkWin(board, player) {
 function gameOver(gameWon){
     for (let index of winCombos[gameWon.index]) {
         document.getElementById(index).style.backgroundColor = 
-            gameWon.player == humPlayer ? "blue" : "red";
+            gameWon.player == human ? "green" : "red";
     }
     for (var i = 0; i < cells.length; i++){
         cells[i].removeEventListener('click', turnClick, false)
     }
 
-    declareWinner(gameWon.player == humPlayer ? 'You Win' : 'You Suck')
+    declareWinner(gameWon.player == human ? { winner: 'human', text: 'You Win!' } : { winner: 'comp', text: 'You Lose!' })
+
 }
 
 
 function declareWinner(who) {
     document.querySelector('.endgame').style.display = 'block'
-    document.querySelector('.endgame .text').innerText = who
+    document.querySelector('.endgame .text').innerText = who.text
 
+    let num = document.getElementById(who.winner).innerText
+    num = Number(num) + 1
+    document.getElementById(who.winner).innerText = num
 }
 
 
-function emptySquares() {
-    return origBoard.filter(s => typeof s == 'number')
+function emptyevents() {
+    return board.filter(s => typeof s == 'number')
 }
 
 
 function bestSpot() {
-    return minimax(origBoard, compPlayer).index;
+    return minimax(board, comp).index;
 }
 
-function checkTie() {
-    if (emptySquares().length == 0 && gameWon.player != player){
+function checkTie(gameWon) {
+
+    if (emptyevents().length == 0 && gameWon === false){
         for (var i = 0; i < cells.length; i++) {
-            cells[i].style.backgroundColor = 'green';
+            cells[i].style.backgroundColor = 'yellow';
             cells[i].removeEventListener('click', turnClick, false)
    
         }
-        declareWinner('Tie Game!')
+        declareWinner({ winner: 'draw', text: 'Tie Game!' })
         return true;
     }
     return false
@@ -104,12 +125,12 @@ function checkTie() {
 
 
 function minimax(newBoard, player) {
-    var availSpots = emptySquares(newBoard);
+    var availSpots = emptyevents(newBoard);
 
     if (checkWin(newBoard, player)) {
         return {score: -10};
     } 
-    else if (checkWin(newBoard, compPlayer)) {
+    else if (checkWin(newBoard, comp)) {
         return {score: 20};
     }
     else if (availSpots.length === 0) {
@@ -121,12 +142,12 @@ function minimax(newBoard, player) {
         move.index = newBoard[availSpots[i]];
         newBoard[availSpots[i]] = player;
 
-        if (player == compPlayer) {
-            var result = minimax(newBoard, humPlayer);
+        if (player == comp) {
+            var result = minimax(newBoard, human);
             move.score = result.score;
         }
         else {
-            var result = minimax(newBoard, compPlayer);
+            var result = minimax(newBoard, comp);
             move.score = result.score;
         }
         newBoard[availSpots[i]] = move.index;
@@ -134,7 +155,7 @@ function minimax(newBoard, player) {
         
     }
     var bestMove;
-    if (player === compPlayer) {
+    if (player === comp) {
         var bestScore = -1000;
         for (let i = 0; i < moves.length; i++) {
             if (moves[i].score > bestScore) {
