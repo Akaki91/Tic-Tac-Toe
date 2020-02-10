@@ -84,7 +84,8 @@ function gameOver(gameWon){
         cells[i].removeEventListener('click', turnClick, false)
     }
 
-    declareWinner(gameWon.player == human ? { winner: 'human', text: 'You Win!' } : { winner: 'comp', text: 'You Lose!' })
+    declareWinner(gameWon.player == human ? { winner: 'human', text: 'You Win!' } : 
+    { winner: 'comp', text: 'You Lose!' })
 
 }
 
@@ -100,7 +101,7 @@ function declareWinner(who) {
 
 
 function emptyevents() {
-    return board.filter(s => typeof s == 'number')
+    return board.filter(spot => typeof spot == 'number')
 }
 
 
@@ -125,13 +126,13 @@ function checkTie(gameWon) {
 
 
 function minimax(newBoard, player) {
-    var availSpots = emptyevents(newBoard);
+    var availSpots = emptyevents();
 
     if (checkWin(newBoard, player)) {
-        return {score: -10};
+        return {score: -30};
     } 
     else if (checkWin(newBoard, comp)) {
-        return {score: 20};
+        return {score: 10};
     }
     else if (availSpots.length === 0) {
         return {score: 0};
