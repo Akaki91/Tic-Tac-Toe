@@ -5,9 +5,9 @@ const winCombos = [
     [0,1,2],
     [3,4,5],
     [6,7,8],
-    [0,3,6],
+    [0,3,6], //index 3
     [1,4,7],
-    [2,5,8],
+    [2,5,8], //index 5
     [0,4,8],
     [2,4,6]
 ]
@@ -128,11 +128,11 @@ function checkTie(gameWon) {
 function minimax(newBoard, player) {
     var availSpots = emptyevents();
 
-    if (checkWin(newBoard, player)) {
-        return {score: -30};
+    if (checkWin(newBoard, human)) {
+        return {score: -10};
     } 
     else if (checkWin(newBoard, comp)) {
-        return {score: 10};
+        return {score: +10};
     }
     else if (availSpots.length === 0) {
         return {score: 0};
